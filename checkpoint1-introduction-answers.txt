@@ -1,0 +1,18 @@
+Exercises
+
+1. For each question below, answer which part of MCV should be responsible for it:
+
+A method that pulls the last 10 topics.
+Model
+A representation of the upvotes on a post.
+View
+Logic that parses params coming from the client.
+Controller
+
+2. Write a user story with acceptance criteria for a feature that involves moderating content on Bloccit.
+
+User Story:
+As a moderator, I want to be able to delete posts so I can keep unwanted content off of the app.
+
+Acceptance Criteria:
+While logged in as a moderator and looking at a post, I see a delete button that, upon clicking, deletes the unwanted post.
