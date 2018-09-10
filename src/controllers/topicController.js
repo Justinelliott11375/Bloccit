@@ -43,7 +43,7 @@ module.exports = {
             if(err){
                 res.redirect(500, `/topics/${topic.id}`)
             } else {
-                res.redirect(303, "/topcs")
+                res.redirect(303, "/topics")
             }
         });
     },
