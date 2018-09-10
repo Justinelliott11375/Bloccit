@@ -33,15 +33,14 @@ describe("Post", () => {
     });
 
     describe("#create()", () => {
-        it("should create a post object with a title, body, and assigned topic", (done) => {
-            Post.create({
+        it("should create a topic object with a title, and description", (done) => {
+            Topic.create({
                 title: "Pros of Cryosleep during the long journey",
-                body: "1. Not having to answer the 'are we there yet?' question.",
-                topicId: this.topic.id
+                description: "1. Not having to answer the 'are we there yet?' question."
             })
-            .then((post) => {
-                expect(post.title).toBe("Pros of Cryosleep during the long journey");
-                expect(post.body).toBe("1. Not having to answer the 'are we there yet?' question.");
+            .then((topic) => {
+                expect(topic.title).toBe("Pros of Cryosleep during the long journey");
+                expect(topic.description).toBe("1. Not having to answer the 'are we there yet?' question.");
                 done();
             })
             .catch((err) => {
@@ -50,41 +49,28 @@ describe("Post", () => {
             })
         })
         
-        it("should not create a post with missing title, body, or assigned topic", (done) => {
-            Post.create({
+        it("should not create a topic with missing title or description", (done) => {
+            Topic.create({
                 title: "Pros of Cryosleep during the long journey."
             })
             .then((post) => {
                 done();
             })
             .catch((err) => {
-                expect(err.message).toContain("Post.body cannot be null");
-                expect(err.message).toContain("Post.topicId cannot be null");
+                expect(err.message).toContain("Topic.description cannot be null");
                 done();
             })
         });
     });
-
-    describe("#set Topic()", () => {
-        it("should associate a topic and a post together", (done) => {
-            Topic.create({
-                title: "Challenges of interstellar travel",
-                description: "1. The Wi-Fi is terrible"
-            })
-            .then((newTopic) => {
-                expect(this.post.topicId).toBe(this.topic.id);
-                done();
-            });
-        })
-    });
-
-    describe("#get Topic()", () => {
-        it("should return the associated topic", (done) => {
-            this.post.getTopic()
-            .then((associatedTopic) => {
-                expect(associatedTopic.title).toBe("Expeditions to Alpha Centauri");
+    describe("#get Posts()", () => {
+        it("should return an array of post objects that are associated with the topic the method was called on", (done) => {
+            this.topic.getPosts()
+            .then((associatedPosts) => {
+                expect(associatedPosts[0].title).toBe("My first visit to Proxima Centauri b");
+                expect(associatedPosts[0].body).toBe("I saw some rocks.");
+                expect(associatedPosts[0].topicId).toBe(this.topic.id);
                 done();
             });
         });
-    });
+    })
 });
