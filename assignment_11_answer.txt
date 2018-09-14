@@ -1,0 +1,3 @@
+Strategy: passport-github
+
+passport-github allows authentication through a github account. After the app is registered with github, it is given a client ID and client secret. This strategy uses OAuth 2.0 tokens that are passed into the verify callback with authenticated github user's profile when authenticating
