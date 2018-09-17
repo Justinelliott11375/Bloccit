@@ -1,12 +1,13 @@
 const Post = require("./models").Post;
 const Topic = require("./models").Topic;
 const Flair = require("./models").Flair;
+const Authorizer = require("./models").Post;
 
 module.exports = {
     addPost(newPost, callback) {
         return Post.create(newPost)
         .then((post) => {
-            callaback(null, post);
+            callback(null, post);
         })
         .catch((err) => {
             callback(err);
