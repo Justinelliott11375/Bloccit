@@ -6,36 +6,61 @@ const sequelize = require("../../src/db/models/index").sequelize;
 const Topic = require("../../src/db/models").Topic;
 const Post = require("../../src/db/models").Post;
 const Flair = require("../../src/db/models").Flair;
+const User = require("../../src/db/models").User;
 
 describe("routes : flairs", () => {
 
     beforeEach((done) => {
         this.topic;
         this.post;
+        this.user;
         this.flair;
 
         sequelize.sync({force: true}).then((res) => {
 
-            Topic.create({
-            title: "Flair Test Topic",
-            description: "Topic for flair test implementation."
+            User.create({
+                email: "starman@tesla.com",
+                password: "Trekkie4lyfe",
+                role: "admin"
             })
-            .then((topic) => {
-                this.topic = topic;
-
-                Post.create({
-                    title: "Flair Test Post",
-                    body: "test testy test test!",
-                    topicId: this.topic.id,
+            .then((user) => {
+                request.get({
+                    url: "http://localhost:3000/auth/fake",
+                    form: {
+                        role: user.role, 
+                        userId: user.id,
+                        email: user.email
+                    }
+                },
+                    (err, res, body) => {
+                      done();
+                    }
+                );
+            
+                Topic.create({
+                    title: "Flair Test Topic",
+                    description: "Topic for flair test implementation.",
+                    posts: [{
+                        title: "Flair Test Post",
+                        body: "test testy test test!",
+                        userId: user.id,
+                    }]
+                }, {
+                    include: {
+                        model: Post,
+                        as: "posts"
+                    }
                 })
-                .then((post) => {
-                    this.post = post;
-
+                .then((topic) => {
+                    this.topic = topic;
+                    this.post = topic.posts[0];
+                
                     Flair.create({
                         name: "Flair 1: blue",
                         color: "Blue",
                         topicId: this.topic.id,
-                        postId: this.post.id
+                        postId: this.post.id,
+                        userId: user.id
                     })
                     .then((flair) => {
                         this.flair = flair;
@@ -69,7 +94,8 @@ describe("routes : flairs", () => {
                 url: `${base}/${this.topic.id}/posts/${this.post.id}/flairs/create`,
                 form: {
                     name: "Flair 2: red",
-                    color: "Red"
+                    color: "Red",
+                    userId: 1
                 }
             };
             request.post(options, (err, res, body) => {

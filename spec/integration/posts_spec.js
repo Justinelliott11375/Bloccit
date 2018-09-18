@@ -7,7 +7,7 @@ const Topic = require("../../src/db/models").Topic;
 const Post = require("../../src/db/models").Post;
 const User = require("../../src/db/models").User;
 
-fdescribe("routes : posts", () => {
+describe("routes : posts", () => {
 
     beforeEach((done) => {
         this.topic;
@@ -18,10 +18,18 @@ fdescribe("routes : posts", () => {
 
             User.create({
                 email: "starman@tesla.com",
-                password: "Trekkie4lyfe"
+                password: "Trekkie4lyfe",
+                role: "admin"
             })
             .then((user) => {
-                this.user = user;
+                request.get({
+                    url: "http://localhost:3000/auth/fake",
+                    form: {
+                        role: user.role, 
+                        userId: user.id,
+                        email: user.email
+                    }
+                });  
 
                 Topic.create({
                     title: "Winter Games",
@@ -29,7 +37,7 @@ fdescribe("routes : posts", () => {
                     posts: [{
                         title: "Snowball Fighting",
                         body: "So much snow!",
-                        userId: this.user.id
+                        userId: user.id
                     }]
                 }, {
                     include: {
@@ -38,9 +46,9 @@ fdescribe("routes : posts", () => {
                     }
                 })
                 .then((topic) => {
-                this.topic = topic;
-                this.post = topic.posts[0];
-                done();
+                    this.topic = topic;
+                    this.post = topic.posts[0];
+                    done();
                 });
             });
         });
@@ -72,14 +80,18 @@ fdescribe("routes : posts", () => {
                 Post.findOne({where: {title: "Watching snow melt"}})
 
                 .then((post) => {
+                    debugger;
+                    console.log(user.role);
                     expect(post).not.toBeNull();
                     expect(post.title).toBe("Watching snow melt");
                     expect(post.body).toBe("Without a doubt my favoriting things to do besides watching paint dry!");
                     expect(post.topicId).not.toBeNull();
                     done();
+                }, (err) => {
+                    console.log(err);
+                    console.log("error");
                 })
                 .catch((err) => {
-                    console.log(err);
                     done();
                 });
             });

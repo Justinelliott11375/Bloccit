@@ -15,7 +15,9 @@ module.exports = {
                 delete req.user;
             }
     
-            if( next ){ next() }
+            if( next ){ 
+                next(); 
+            }
         }
         function route(req,res){
             res.redirect("/")
