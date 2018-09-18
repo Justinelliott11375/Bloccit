@@ -80,7 +80,6 @@ describe("routes : posts", () => {
                 Post.findOne({where: {title: "Watching snow melt"}})
 
                 .then((post) => {
-                    debugger;
                     console.log(user.role);
                     expect(post).not.toBeNull();
                     expect(post.title).toBe("Watching snow melt");
