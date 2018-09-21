@@ -45,7 +45,7 @@ describe("routes : users", () => {
                 .then((user) => {
                     expect(user).not.toBeNull();
                     expect(user.email).toBe("user@example.com");
-                    expect("user.id".toBe(1));
+                    expect(user.id).toBe(1);
                     done();
                 })
                 .catch((err) => {

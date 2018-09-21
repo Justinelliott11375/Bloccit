@@ -180,7 +180,7 @@ describe("routes : topics", () => {
       });
     });
     describe("GET /topics/new", () => {
-      it("should NOT render a new topic form, but redirect to topics view", (done) => {
+      it("should render a new topic form, but redirect to topics view", (done) => {
         request.get(`${base}new`, (err, res, body) => {
           expect(err).toBeNull();
           expect(body).toContain("Topics");
@@ -196,11 +196,12 @@ describe("routes : topics", () => {
           description: "What's your favorite blink-182 song?"
         }
       };
-      it("should NOT create a new topic", (done) => {
+      it("should create a new topic", (done) => {
         request.post(options, (err, res, body) => {
           Topic.findOne({where: {title: "blink-182 songs"}})
           .then((topic) => {
-            expect(topic).toBeNull(); 
+            expect(topic).not.toBeNull();
+            expect(topic.title).toBe("blink-182 songs"); 
             done();
           })
           .catch((err) => {

@@ -1,6 +1,5 @@
 const Topic = require("./models").Topic;
 const Post = require("./models").Post;
-const Flair = require("./models").Flair;
 const Authorizer = require("../policies/topic");
 
 module.exports = {
@@ -32,6 +31,7 @@ module.exports = {
     },
 
     addTopic(newTopic, callback){
+        
         return Topic.create({
             title: newTopic.title,
             description: newTopic.description
