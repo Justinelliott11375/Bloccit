@@ -45,5 +45,19 @@ module.exports = {
         } else {
             return next();
         }
+    },
+    validateComments(req, res, next) {
+        if(req.method === "POST") {
+            req.checkBody("body", "must not be empty").notEmpty();
+        }
+
+        const errors = req.validationErors();
+
+        if(errors) {
+            req.flash("error", errors);
+            return res.redirect(req.headers.referer);
+        } else {
+            return next();
+        }
     }
 }
