@@ -154,36 +154,23 @@ describe("routes: comments", () => {
         })
 
         describe("POST /topics/:topicId/posts/:postId/comments/:id/destroy", () => {
-            it("should delete the comment with the associated ID", (done) => {
-                Comment.findOne(
-                    {
-                        where: {
-                            body: "ay caramba!!!!"
-                        }
-                    }
-                ).then((comment) => {
-                    expect(comment.body).toContain("ay caramba!!!!");
-                    expect(this.user.id === comment.userId);
-                    
 
-					request.post(
-						`${base}${this.topic.id}/posts/${this.post.id}/comments/${this.comment.id}/destroy`,
-						(err, res, body) => {
-							Comment.findOne(
-                                {
-                                    where: {
-                                        body: "ay caramba!!!!"
-                                    }
-                                }
-                            ).then((comment) => {
-                                expect(res.statusCode).toBe(302);
-								expect(comment).not.toBeNull();
-								done();
-							});
-						},
-					);
-				});
-            });
+            it("should delete the comment with the associated ID", (done) => {
+                Comment.all()
+                .then((comments) => {
+                    const commentCountBeforeDelete = comments.length;
+                    expect(commentCountBeforeDelete).toBe(1);
+                    request.post(`${base}${this.topic.id}/posts/${this.post.id}/comments/${this.comment.id}/destroy`,(err, res, body) => {
+                        Comment.all()
+                        .then((comments) => {
+                            expect(err).toBeNull();
+                            expect(comments.length).toBe(commentCountBeforeDelete - 1);
+                            done();
+                        })
+                    })
+                });
+            })
+      
         });
     });
 });
