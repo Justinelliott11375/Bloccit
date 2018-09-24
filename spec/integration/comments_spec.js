@@ -170,7 +170,68 @@ describe("routes: comments", () => {
                     })
                 });
             })
-      
         });
+    });
+
+    describe("member user attempting to delete another member's Comment", () => {
+        it("should NOT delete the comment because the user is not the owner of the comment", (done) => {
+           
+            request.get(
+                {
+                    url: "http://localhost:3000/auth/fake/",
+                    form: {
+                        role: "member",
+                        userId: 2,
+                    },
+                },
+                (err, res, body) => {
+                    done();
+                },
+            );
+            Comment.all()
+            .then((comments) => {
+                const commentCountBeforeDelete = comments.length;
+                expect(commentCountBeforeDelete).toBe(1);
+                request.post(`${base}${this.topic.id}/posts/${this.post.id}/comments/${this.comment.id}/destroy`,(err, res, body) => {
+                    Comment.all()
+                    .then((comments) => {
+                        expect(err).toBeNull();
+                        expect(comments.length).toBe(commentCountBeforeDelete);
+                        done();
+                    })
+                })
+            });
+        })
+    });
+
+    describe("admin user attempting to delete another member's Comment", () => {
+        it("should delete the comment because of admin authorization", (done) => {
+           
+            request.get(
+                {
+                    url: "http://localhost:3000/auth/fake/",
+                    form: {
+                        role: "admin",
+                        userId: 3,
+                    },
+                },
+                (err, res, body) => {
+                    done();
+                },
+            );
+            Comment.all()
+            .then((comments) => {
+                const commentCountBeforeDelete = comments.length;
+                expect(commentCountBeforeDelete).toBe(1);
+                request.post(`${base}${this.topic.id}/posts/${this.post.id}/comments/${this.comment.id}/destroy`,(err, res, body) => {
+                    Comment.all()
+                    .then((comments) => {
+                        expect(err).toBeNull();
+                        expect(comments.length).toBe(commentCountBeforeDelete - 1);
+                        done();
+                    })
+                })
+            });
+        })
     });
 });
