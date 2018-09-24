@@ -156,6 +156,21 @@ describe("routes: comments", () => {
 
         describe("POST /topics/:topicId/posts/:postId/comments/:id/destroy", () => {
             it("should delete the comment with the associated ID", (done) => {
+                User.create({
+                    email: "member@member.com",
+                    password: "password"
+                })
+                .then((user) => {
+                    Comment.create({
+                        body: "Comment text here" ,
+                        userId: user.id,
+                        postId: this.post.id
+                    })
+                    .then((comment) => {
+                        this.comment = comment;
+                        done();
+                    })
+                });
                 Comment.all()
                 .then((comments) => {
                     const commentCountBeforeDelete = comments.length;
