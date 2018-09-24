@@ -51,7 +51,7 @@ module.exports = {
             req.checkBody("body", "must not be empty").notEmpty();
         }
 
-        const errors = req.validationErors();
+        const errors = req.validationErrors();
 
         if(errors) {
             req.flash("error", errors);

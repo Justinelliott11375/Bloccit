@@ -5,7 +5,7 @@ const sequelize = require("../../src/db/models/index").sequelize;
 const Topic = require("../../src/db/models").Topic;
 const Post = require("../../src/db/models").Post;
 const User = require("../../src/db/models").User;
-const Comment = require("../../db/models").Comment;
+const Comment = require("../../src/db/models").Comment;
 
 describe("routes: comments", () => {
     
@@ -18,7 +18,7 @@ describe("routes: comments", () => {
         sequelize.sync({force: true}).then((res) => {
             
             User.create({
-                email: "startman@tesla.com",
+                email: "starman@tesla.com",
                 password: "Trekkie4lyfe"
             })
             .then((user) => {
@@ -71,7 +71,7 @@ describe("routes: comments", () => {
         });
 
         describe("POST /topics/:topicId/posts/:postId/comments/create", () => {
-            it("should not create a new comment", () => {
+            it("should not create a new comment", (done) => {
                 const options = {
                     url: `${base}${this.topic.id}/posts/${this.post.id}/comments/create`,
                     form: {
@@ -117,8 +117,9 @@ describe("routes: comments", () => {
     describe("signed in user performing CRUD actions for Comment", () => {
         beforeEach((done) => {
             request.get({
-                url: "http://localhost3000/auth/fake",
+                url: "http://localhost:3000/auth/fake",
                 form: {
+                    email: "member@member.com",
                     role: "member",
                     userId: this.user.id
                 }
@@ -130,10 +131,11 @@ describe("routes: comments", () => {
         });
         describe("POST /topics/:topicId/posts/:postId/comments/create", () => {
             it("should create a new comment and redirect", (done) => {
-                const option = {
-                    url: `{base}${this.topic.id}/posts/${this.post.id}/comments/create`,
+                const options = {
+                    url: `${base}${this.topic.id}/posts/${this.post.id}/comments/create`,
                     form: {
                         body: "This comment is amazing!"
+                        
                     }
                 };
                 request.post(options, (err, res, body) => {
