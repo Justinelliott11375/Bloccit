@@ -119,7 +119,6 @@ describe("routes: comments", () => {
             request.get({
                 url: "http://localhost:3000/auth/fake",
                 form: {
-                    email: "member@member.com",
                     role: "member",
                     userId: this.user.id
                 }
@@ -156,37 +155,34 @@ describe("routes: comments", () => {
 
         describe("POST /topics/:topicId/posts/:postId/comments/:id/destroy", () => {
             it("should delete the comment with the associated ID", (done) => {
-                User.create({
-                    email: "member@member.com",
-                    password: "password"
-                })
-                .then((user) => {
-                    Comment.create({
-                        body: "Comment text here" ,
-                        userId: user.id,
-                        postId: this.post.id
-                    })
-                    .then((comment) => {
-                        this.comment = comment;
-                        done();
-                    })
-                });
-                Comment.all()
-                .then((comments) => {
-                    const commentCountBeforeDelete = comments.length;
-                    expect(commentCountBeforeDelete).toBe(1);
+                Comment.findOne(
+                    {
+                        where: {
+                            body: "ay caramba!!!!"
+                        }
+                    }
+                ).then((comment) => {
+                    expect(comment.body).toContain("ay caramba!!!!");
+                    expect(this.user.id === comment.userId);
+                    
 
-                    request.post(`${base}${this.topic.id}/posts/${this.post.id}/comments/${this.comment.id}/destroy`, 
-                    (err, res, body) => {
-                        expect(res.statusCode).toBe(302);
-                        Comment.all()
-                        .then((comments) => {
-                            expect(err).toBeNull();
-                            expect(comments.length).toBe(commentCountBeforeDelete - 1);
-                            done();
-                        })
-                    });
-                });
+					request.post(
+						`${base}${this.topic.id}/posts/${this.post.id}/comments/${this.comment.id}/destroy`,
+						(err, res, body) => {
+							Comment.findOne(
+                                {
+                                    where: {
+                                        body: "ay caramba!!!!"
+                                    }
+                                }
+                            ).then((comment) => {
+                                expect(res.statusCode).toBe(302);
+								expect(comment).not.toBeNull();
+								done();
+							});
+						},
+					);
+				});
             });
         });
     });
