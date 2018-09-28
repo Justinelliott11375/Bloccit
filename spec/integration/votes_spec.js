@@ -94,48 +94,61 @@ describe("routes : votes", () => {
 
     describe("signed in user voting on a post", () => {
 
-        beforeEach((done) => {  // before each suite in this context
-          request.get({         // mock authentication
-            url: "http://localhost:3000/auth/fake",
-            form: {
-              role: "member",     // mock authenticate as member user
-              userId: this.user.id
-            }
-          },
+        beforeEach((done) => {  
+            request.get({       
+                url: "http://localhost:3000/auth/fake",
+                form: {
+                    role: "member", 
+                    userId: this.user.id
+                }
+            },
             (err, res, body) => {
-              done();
-            }
-          );
+                done();
+            });
         });
    
         describe("GET /topics/:topicId/posts/:postId/votes/upvote", () => {
    
-          it("should create an upvote", (done) => {
-            const options = {
-              url: `${base}${this.topic.id}/posts/${this.post.id}/votes/upvote`
-            };
-            request.get(options,
-              (err, res, body) => {
-                Vote.findOne({          
-                  where: {
-                    userId: this.user.id,
-                    postId: this.post.id
-                  }
+            it("should create an upvote", (done) => {
+                const options = {
+                    url: `${base}${this.topic.id}/posts/${this.post.id}/votes/upvote`
+                };
+                request.get(options, (err, res, body) => {
+                    Vote.findOne({          
+                        where: {
+                            userId: this.user.id,
+                            postId: this.post.id
+                        }
+                    })
+                    .then((vote) => {               // confirm that an upvote was created
+                        expect(vote).not.toBeNull();
+                        expect(vote.value).toBe(1);
+                        expect(vote.userId).toBe(this.user.id);
+                        expect(vote.postId).toBe(this.post.id);
+                        done();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                        done();
+                    });
+                });
+            });
+
+            it("should unsuccessfully attempt to create an upvote with a value of 2", (done) => {
+                Vote.create({
+                    value: 2,
+                    postId: this.post.id,
+                    userId: this.user.id
                 })
-                .then((vote) => {               // confirm that an upvote was created
-                  expect(vote).not.toBeNull();
-                  expect(vote.value).toBe(1);
-                  expect(vote.userId).toBe(this.user.id);
-                  expect(vote.postId).toBe(this.post.id);
-                  done();
+                .then((vote) => {
+                    // should not execute, specs are in .catch()
+                    done();
                 })
                 .catch((err) => {
-                  console.log(err);
-                  done();
+                    expect(err.message).toContain("Validation isIn on value failed");
+                    done();
                 });
-              }
-            );
-          });
+            });
         });
    
         describe("GET /topics/:topicId/posts/:postId/votes/downvote", () => {
@@ -165,6 +178,152 @@ describe("routes : votes", () => {
                     });
                 });
             });
+
+            it("should unsuccessfully create a second downvote", (done) => {
+                const options = {
+                url: `${base}${this.topic.id}/posts/${this.post.id}/votes/downvote`
+                };
+
+                //create new post and associated new downvote
+
+                Post.create({ 
+                    title: "Sample post 2",
+                    body: "Description for sample post 2.",
+                    topicId: this.topic.id,
+                    userId: this.user.id,
+                    votes: [{
+                        value: -1,
+                        postId: 2,
+                        userId: this.user.id
+                    }]
+                }, {
+                    include: {
+                    model: Vote,
+                    as: "votes"
+                    }
+                })
+                .then((res) => {
+
+                    this.post = res;
+                    this.vote = this.post.votes[0];
+                    this.topic.posts[1] = res;
+
+                    // check to ensure that first vote is created
+                    expect(this.vote).not.toBeNull();
+                    expect(this.vote.value).toBe(-1);
+                    expect(this.vote.userId).toBe(this.user.id);
+                    expect(this.vote.postId).toBe(2);
+
+                    // attempt to create a second downvote
+                    request.get(options, (err, res, body) => {
+                        Post.findOne({
+                            where: {
+                                title: "Sample post 2"
+                            }
+                        })
+                        .then((post) => {
+                            //console.log(this.post.title);
+                            //console.log(this.post.votes.length);
+
+                            //check that second downvote was not created
+                            expect(this.post.getPoints()).toBe(-1);
+                            expect(this.post.getPoints()).not.toBe(-2);
+                            done();
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                            done();
+                        })
+                    });
+                })
+            });
         });
     }); 
+
+    describe("getting points associated with a post via the getPoints() method", () => {
+        it("should create a post then successfully call the getPoints() method on it", (done) => {
+            Post.create({ 
+                title: "Sample post 3",
+                body: "Description for sample post 3.",
+                topicId: this.topic.id,
+                userId: this.user.id,
+                votes: [{
+                    value: 1,
+                    postId: 3,
+                    userId: this.user.id
+                }]
+            }, {
+                include: {
+                model: Vote,
+                as: "votes"
+                }
+            })
+            .then((res) => {
+
+                this.post = res;
+                this.vote = this.post.votes[0];
+                this.topic.posts[1] = res;
+                expect(this.post.getPoints()).toBe(1);
+                done();
+            });
+        })
+    });
+
+    describe("using hasUpvoteFor() and hasDownvoteFor() methods", () => {
+        it("should create a post then successfully call the hasUpvotefor() method to see if the user passed has an upvote for the post ", (done) => {
+            Post.create({ 
+                title: "Sample post 4",
+                body: "Description for sample post 4.",
+                topicId: this.topic.id,
+                userId: this.user.id,
+                votes: [{
+                    value: 1,
+                    postId: 4,
+                    userId: this.user.id
+                }]
+            }, {
+                include: {
+                model: Vote,
+                as: "votes"
+                }
+            })
+            .then((res) => {
+
+                this.post = res;
+                this.vote = this.post.votes[0];
+                this.topic.posts[1] = res;
+                //console.log(this.post.hasUpvoteFor(this.user.id));
+                expect(this.post.hasUpvoteFor(this.user.id)).toBe(true);
+                done();
+            });
+        })
+
+        it("should create a post then successfully call the hasDownvotefor() method to see if the user passed has a downvote for the post ", (done) => {
+            Post.create({ 
+                title: "Sample post 4",
+                body: "Description for sample post 4.",
+                topicId: this.topic.id,
+                userId: this.user.id,
+                votes: [{
+                    value: -1,
+                    postId: 4,
+                    userId: this.user.id
+                }]
+            }, {
+                include: {
+                model: Vote,
+                as: "votes"
+                }
+            })
+            .then((res) => {
+
+                this.post = res;
+                this.vote = this.post.votes[0];
+                this.topic.posts[1] = res;
+                //console.log(this.post.hasDownvoteFor(this.user.id));
+                expect(this.post.hasDownvoteFor(this.user.id)).toBe(true);
+                done();
+            });
+        })
+    });
 });
