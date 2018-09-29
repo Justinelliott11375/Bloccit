@@ -90,5 +90,13 @@ module.exports = (sequelize, DataTypes) => {
       return favorite.userId == userId;
     });
   }
+
+  Post.addScope("lastFiveFor", (userId) => {
+    return {
+      where: {userId: userId},
+      limit: 5,
+      order: [["createdAt", "DESC"]]
+    }
+  })
   return Post;
 }; 
