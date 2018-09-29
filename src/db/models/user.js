@@ -36,6 +36,15 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "userId",
       as: "favorites"
     })
+    User.addScope("favoritedPosts", (userId) => {
+      return {
+        include: [{
+          model: models.Favorite,
+          as: "favorites"
+        }],
+        where: { id:userId }
+      }
+    })
   };
 
   User.prototype.isAdmin = function() {
